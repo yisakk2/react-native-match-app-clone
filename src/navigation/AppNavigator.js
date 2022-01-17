@@ -16,6 +16,9 @@ import Message from '../screens/message'
 // component
 import DrawerModal from '../component/drawerModal'
 import { Text } from 'react-native'
+import Icon from 'react-native-vector-icons/Feather'
+
+Icon.loadFont()
 
 const Drawer = createDrawerNavigator()
 const Tab = createMaterialTopTabNavigator()
@@ -64,7 +67,10 @@ const AppNavigator = () => {
           name="심쿵" 
           component={Tabs} 
           options={{
-            headerShadowVisible: false
+            headerShadowVisible: false,
+            headerRight: () => (
+              <Icon name="message-square" size={24} />
+            )
           }}
         />
         <Stack.Screen name="Setting" component={Setting} />
