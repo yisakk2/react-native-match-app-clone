@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "277541450660",
+    "project_id": "react-native-match-app",
+    "storage_bucket": "react-native-match-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:277541450660:android:800ea5c5b727b5d4058731",
+        "android_client_info": {
+          "package_name": "com.matchapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "277541450660-jqob4mkdcaoaogeesrnjpog78ng68g2b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIUyb8q5OpDZr768rwO37W1O_StlTw8Mc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "277541450660-jqob4mkdcaoaogeesrnjpog78ng68g2b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
