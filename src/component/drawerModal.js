@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { StyleSheet, View, ScrollView, Text, Image, Modal, TouchableOpacity, TouchableWithoutFeedback, Dimensions, SafeAreaView, StatusBar, Platform } from 'react-native'
 
-const DrawerModal = ({ visible, onClose }) => {
+const DrawerModal = ({ visible, onClose, charge, unlimited, block, attract, setting, notification, ask }) => {
   return (
     <Modal visible={visible} animationType='none' transparent>
       <SafeAreaView style={styles.modal}>
@@ -32,7 +32,7 @@ const DrawerModal = ({ visible, onClose }) => {
             <Text style={{fontSize: 16}}>내 매력도 보기</Text>
           </TouchableOpacity>
           <View style={styles.divider}></View>
-          <TouchableOpacity style={styles.listItem}>
+          <TouchableOpacity style={styles.listItem} onPress={setting}>
             <Text style={{fontSize: 16}}>설정</Text>
           </TouchableOpacity>
           <View style={styles.divider}></View>
