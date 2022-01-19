@@ -12,8 +12,6 @@ import Setting from '../screens/setting'
 import Charge from '../screens/charge'
 import Message from '../screens/message'
 import Card from '../screens/card'
-import SignIn from '../screens/signin'
-import SignUp from '../screens/signup'
 // component
 import DrawerModal from '../component/drawerModal'
 import { StyleSheet, View, TouchableOpacity } from 'react-native'
@@ -102,8 +100,6 @@ const AppNavigator = () => {
         <Stack.Screen name="Charge" component={Charge} options={{headerTitle: '하트충전'}} />
         <Stack.Screen name="Message" component={Message} options={{headerTitle: '대화'}} />
         <Stack.Screen name="Card" component={Card} options={{headerTitle: '카드리스트'}} />
-        <Stack.Screen name="SignIn" component={SignIn} options={{headerTitle: '로그인', headerLeft: null}}/>
-        <Stack.Screen name="SignUp" component={SignUp} options={{headerTitle: '회원가입'}}/>
       </Stack.Navigator>
       <DrawerModal 
         visible={modalVisible}
