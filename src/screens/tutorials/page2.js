@@ -59,7 +59,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'white'
   }, 
   title: {
-    fontSize: 32,
+    fontSize: 28,
+    fontWeight: 'bold',
     marginBottom: 16,
   },
   inputContainer: {

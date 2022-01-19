@@ -55,7 +55,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'white'
   }, 
   title: {
-    fontSize: 32
+    fontSize: 28,
+    fontWeight: 'bold'
   },
   inputBox: {
     width: width * 0.6,

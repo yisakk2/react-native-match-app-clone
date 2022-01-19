@@ -1,45 +1,66 @@
 import * as React from 'react'
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Dimensions } from 'react-native'
+import { StyleSheet, View, Text, TouchableOpacity, Dimensions, Platform, Image } from 'react-native'
 import { FirebaseContext } from '../../provider/FirebaseProvider'
+import { request, PERMISSIONS, RESULTS } from 'react-native-permissions'
+import ImagePicker from 'react-native-image-crop-picker'
+import Icon from 'react-native-vector-icons/FontAwesome'
+
+Icon.loadFont()
 
 const Page5 = ({ navigation }) => {
   const context = React.useContext(FirebaseContext)
-  const [text, setText] = React.useState('')
+  const [image, setImage] = React.useState('')
   const [available, setAvailable] = React.useState(false)
 
-  const isAvailable = text => {
-    if (text === '') {
-      setAvailable(false)
+  const checkPermission = async () => {
+    if (Platform.OS === 'android') {
+      const result = await request(PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION)
+      if (result === RESULTS.GRANTED) {
+      }
     } else {
-      setAvailable(true)
+      const result = await request(PERMISSIONS.IOS.PHOTO_LIBRARY)
+      if (result === RESULTS.GRANTED) {
+      }
     }
   }
 
-  const nextPage = () => {
-    const profile = context.profile
-    profile.nickname = text
-    context.updateState(context, { profile })
-    navigation.navigate('Page2')
+  const choosePhotoFromLibrary = () => {
+    ImagePicker.openPicker({
+      width: 250,
+      height: 250,
+      cropping: true,
+      compressImageQuality: 0.7
+    }).then(image => {
+      setAvailable(true)
+      setImage(Platform.OS === 'android' ? image.path : image.sourceURL)
+    });
+  }
+
+  const submit = () => {
+    let filename = image.split('/')
+    filename = filename[filename.length - 1]
+    context.uploadImage(image, filename)
+    navigation.navigate('Page6')
   }
   
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>사진:</Text>
-      <TextInput
-        style={styles.inputBox}
-        placeholder="이름"
-        onChangeText={text => {
-          setText(text)
-          isAvailable(text)
-        }}
-        autoCapitalize={'none'}
-      />
-      <Text style={{color: 'grey'}}>프로필에 표시되는 닉네임으로,</Text>
-      <Text style={{color: 'grey'}}>이후 변경할 수 없습니다.</Text>
+      <Text style={styles.title}>사진 추가:</Text>
+      <TouchableOpacity 
+        style={styles.image}
+        onPress={choosePhotoFromLibrary}
+      >
+        {image === '' ? 
+          <Icon name="photo" color={'grey'} size={50} /> 
+          :
+          <Image style={{width: 250, height: 250, resizeMode: 'cover', borderRadius: 10}} source={{uri: image}} />
+        }
+      </TouchableOpacity>
+      <Text style={{color: 'grey'}}>프로필에 표시되는 사진입니다.</Text>
       <TouchableOpacity
         style={[styles.submitBtn, {backgroundColor: available ? 'lightcoral' : 'whitesmoke'}]}
         disabled={!available}
-        onPress={nextPage}
+        onPress={submit}
       >
         <Text style={{fontSize: 18, textAlign: 'center', color: available ? 'white' : 'grey'}}>완료</Text>
       </TouchableOpacity>
@@ -56,15 +77,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'white'
   }, 
   title: {
-    fontSize: 32
+    fontSize: 28,
+    fontWeight: 'bold'
   },
-  inputBox: {
-    width: width * 0.7,
-    height: 50,
-    fontSize: 24,
-    borderBottomWidth: 1,
+  image: {
+    width: 250,
+    height: 250,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'lightgrey',
     marginTop: 32,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   submitBtn: {
     width: width * 0.8,
@@ -72,7 +96,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignContent: 'center',
     justifyContent: 'center',
-    marginTop: 32,
+    marginTop: 48,
   }
 })
 

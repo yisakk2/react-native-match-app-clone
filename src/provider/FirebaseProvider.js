@@ -1,6 +1,8 @@
 import * as React from 'react'
 import auth from '@react-native-firebase/auth'
+import storage from '@react-native-firebase/storage'
 import firestore from '@react-native-firebase/firestore'
+import { profile } from 'console';
 
 export const FirebaseContext = React.createContext();
 
@@ -11,6 +13,7 @@ export class FirebaseProvider extends React.Component {
       user: null,
       profile: null,
       status: 'none',
+      isloading: true,
     }
   }
 
@@ -68,12 +71,26 @@ export class FirebaseProvider extends React.Component {
     this.setState({ ...this.state, user: null })
   }
 
+  uploadImage = (path, name) => {
+    let reference = storage().ref(name)
+    let task = reference.putFile(path)
+
+    task.then(() => {
+      const profile = this.state.profile
+      profile.image = 'gs://react-native-match-app.appspot.com/' & name
+      this.setState({ ...this.state, profile })
+      firestore().collection('users').doc(this.state.user.uid).update(profile)
+      console.log('Image uploaded to the firestore!')
+    }).catch(e => console.log('uploaded image error => ', e))
+  }
+
   loadUser = async () => {
     const user = auth().currentUser
-    const profile = await firestore().collection('users').doc(user.uid).get()
     if (user !== null) {
-      this.setState({ ...this.state, user, profile: profile._data })
-      console.log(profile._data)
+      const profile = await firestore().collection('users').doc(user.uid).get()
+      setInterval(() => {
+        this.setState({ ...this.state, user, profile: profile._data, isloading: false })
+      }, 3000)
     }
   }
 
@@ -90,15 +107,18 @@ export class FirebaseProvider extends React.Component {
       user,
       profile,
       status,
+      isloading,
     } = this.state
     return (
       <FirebaseContext.Provider value={{
         user,
         profile,
         status,
+        isloading,
         signIn: this.signIn,
         signUp: this.signUp,
         signOut: this.signOut,
+        uploadImage: this.uploadImage,
         updateState: this.updateState,
       }}>
         {this.props.children}
