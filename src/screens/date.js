@@ -7,26 +7,25 @@ Icon.loadFont()
 
 const Date = ({ navigation }) => {
   const context = React.useContext(FirebaseContext)
-  const [images, setImages] = React.useState([])
 
   React.useEffect(() => {
     if (context.todaysCard.length === 0) context.loadtodaysCard()
-    // else setupImages()
+    else setupImages()
   }, [context.todaysCard])
 
   const setupImages = async () => {
     const data = context.todaysCard
     let index = 0
-    for (let item of data.todaysCard) {
-      const array = []
+    for (let item of data) {
+      const images = []
       const firstUrl = await context.downloadImage(item._data.firstPick.image)
       const secondUrl = await context.downloadImage(item._data.secondPick.image)
-      array.push(firstUrl)
-      array.push(secondUrl)
-      // data[index] = [...item, array]
+      images.push(firstUrl)
+      images.push(secondUrl)
+      data[index] = {...item, images}
       index++
     }
-    // console.log(data)
+    context.updateState(context, { todaysCard: data })
   }
 
   return (
@@ -39,19 +38,20 @@ const Date = ({ navigation }) => {
           </TouchableOpacity>
           {context.todaysCard.length > 0 ? (
             context.todaysCard.map(item => (
-              <View key={1}>
+              <View key={item._data.createdAt.toString()}>
                 <View style={styles.titleCard}>
                   <Text style={styles.titleCardText}>오늘의 카드</Text>
                   <Text style={styles.titleCardText}>오늘 카드 남은 시간 19:24</Text>
                 </View>
                 <TouchableOpacity style={styles.cardContainer}>
-                  <View style={styles.cardLeft}></View>
-                  {/* {images.length > 0 ? 
+                  {item.images !== undefined ? 
                     <Image
                       style={styles.cardLeft}
+                      source={{uri: item.images[0]}}
                     />
-                  : <View style={styles.cardLeft}></View>
-                  } */}
+                    : 
+                    <View style={styles.cardLeft}></View>
+                  }
                   <View style={styles.cardRight}>
                     <Text style={{color:'red'}}>{item._data.firstPick.nickname}</Text>
                     <Text style={{fontSize:12,color:'red'}}>(경기, 20대 중반)</Text>
@@ -66,7 +66,14 @@ const Date = ({ navigation }) => {
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.cardContainer}>
-                  <View style={styles.cardLeft}></View>
+                  {item.images ? 
+                    <Image
+                      style={styles.cardLeft}
+                      source={{uri: item.images[1]}}
+                    />
+                    : 
+                    <View style={styles.cardLeft}></View>
+                  }
                   <View style={styles.cardRight}>
                     <Text style={{color:'red'}}>{item._data.secondPick.nickname}</Text>
                     <Text style={{fontSize:12,color:'red'}}>(경기, 20대 중반)</Text>

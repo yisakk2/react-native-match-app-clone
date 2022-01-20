@@ -22,8 +22,11 @@ export class FirebaseProvider extends React.Component {
     auth()
       .signInWithEmailAndPassword(email, password)
       .then(async user => {
+        let image = null
         const profile = await firestore().collection('users').doc(user.user.uid).get()
-        this.setState({ ...this.state, user, status: 'complete', profile: profile._data })
+        // const image = await this.downloadImage(profile._data.image)
+        if (profile._data.tutorial) image = await this.downloadImage(profile._data.image)
+        this.setState({ ...this.state, user, profile: profile._data, image, status: 'complete'})
       })
       .catch(e => {
         console.log(e)
@@ -97,7 +100,7 @@ export class FirebaseProvider extends React.Component {
     let task = reference.putFile(path)
 
     task.then(async () => {
-      let profile = this.state.profile
+      const profile = this.state.profile
       profile.image = name
       // this.setState({ ...this.state, profile })
       firestore().collection('users').doc(this.state.user.uid).update(profile)
@@ -117,23 +120,13 @@ export class FirebaseProvider extends React.Component {
     firestore().collection('users').doc(this.state.user.uid).update(data)
   }
 
-  initialize = async () => {
-    const user = auth().currentUser
-    if (user !== null) {
-      const profile = await firestore().collection('users').doc(user.uid).get()
-      const image = await this.downloadImage(profile._data.image)
-      this.setState({ ...this.state, user, profile: profile._data, image, isloading: false })
-    } else {
-      this.setState({ ...this.state, user, isloading: false })
-    }
-  }
-
   loadUser = async () => {
     const user = auth().currentUser
     if (user !== null) {
       const profile = await firestore().collection('users').doc(user.uid).get()
+      const image = await this.downloadImage(profile._data.image)
       setTimeout(() => {
-        this.setState({ ...this.state, user, profile: profile._data, isloading: false })
+        this.setState({ ...this.state, user, profile: profile._data, image, isloading: false })
       }, 2000)
     } else {
       setTimeout(() => {
@@ -161,8 +154,22 @@ export class FirebaseProvider extends React.Component {
     }
   }
 
+  initialize = async () => {
+    const user = auth().currentUser
+    if (user !== null) {
+      const profile = await firestore().collection('users').doc(user.uid).get()
+      const image = await this.downloadImage(profile._data.image)
+      setTimeout(() => {
+        this.setState({ ...this.state, user, profile: profile._data, image, isloading: false })
+      }, 2000)
+    } else {
+      setTimeout(() => {
+        this.setState({ ...this.state, isloading: false })
+      }, 2000)
+    }
+  }
+
   componentDidMount() {
-    // this.loadUser()
     this.initialize()
   }
 

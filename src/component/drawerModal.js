@@ -5,18 +5,18 @@ import storage from '@react-native-firebase/storage'
 
 const DrawerModal = ({ visible, onClose, profile, charge, unlimited, block, attract, setting, notification, ask }) => {
   const context = React.useContext(FirebaseContext)
-  const [image, setImage] = React.useState(context.image)
+  // const [image, setImage] = React.useState(context.image)
 
-  const getProfileImage = async () => {
-    let ref = storage().ref(context.profile.image)
-    let imageURL = await ref.getDownloadURL()
-    context.updateState(context, {image: imageURL})
-    setImage(imageURL)
-  }
+  // const getProfileImage = async () => {
+  //   let ref = storage().ref(context.profile.image)
+  //   let imageURL = await ref.getDownloadURL()
+  //   context.updateState(context, {image: imageURL})
+  //   setImage(imageURL)
+  // }
 
-  React.useEffect(() => {
-    context.image === null ? getProfileImage() : setImage(context.image)
-  }, [context.image])
+  // React.useEffect(() => {
+  //   context.image === null ? getProfileImage() : setImage(context.image)
+  // }, [context.image])
 
   return (
     <Modal visible={visible} animationType='none' transparent>
@@ -28,13 +28,13 @@ const DrawerModal = ({ visible, onClose, profile, charge, unlimited, block, attr
           >
             <ImageBackground
               style={styles.imageBackground}
-              source={{uri: image}}
+              source={{uri: context.image}}
               blurRadius={2}
             >
               <View style={styles.imageTopContainer}>
                 <Image 
                   style={styles.imageCirles}
-                  source={{uri: image}}
+                  source={{uri: context.image}}
                 />
                 <View style={styles.textContainer}>
                   <Text style={{fontSize: 18, fontWeight: 'bold', paddingBottom: 12, color: 'white'}}>{context.profile.nickname}</Text>
