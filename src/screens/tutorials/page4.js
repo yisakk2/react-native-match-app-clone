@@ -8,7 +8,7 @@ const Page4 = ({ navigation }) => {
   const [available, setAvailable] = React.useState(false)
 
   const isAvailable = text => {
-    if (text === '') {
+    if (text.length < 3) {
       setAvailable(false)
     } else {
       setAvailable(true)
@@ -17,24 +17,28 @@ const Page4 = ({ navigation }) => {
 
   const nextPage = () => {
     const profile = context.profile
-    profile.nickname = text
+    profile.height = parseInt(text)
     context.updateState(context, { profile })
     navigation.navigate('Page5')
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>내 직업:</Text>
-      <TextInput
-        style={styles.inputBox}
-        placeholder="직업"
-        onChangeText={text => {
-          setText(text)
-          isAvailable(text)
-        }}
-        autoCapitalize={'none'}
-      />
-      <Text style={{color: 'grey'}}>프로필에 표시되는 직업 이름입니다.</Text>
+      <Text style={styles.title}>키:</Text>
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.inputBox}
+          placeholder="170"
+          onChangeText={text => {
+            setText(text)
+            isAvailable(text)
+          }}
+          keyboardType='number-pad'
+          maxLength={3}
+        />
+        <Text style={{fontSize: 22, paddingRight: 4}}>CM</Text>
+      </View>
+      <Text style={{color: 'grey'}}>키는 공개됩니다.</Text>
       <TouchableOpacity
         style={[styles.submitBtn, {backgroundColor: available ? 'lightcoral' : 'whitesmoke'}]}
         disabled={!available}
@@ -58,13 +62,20 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold'
   },
-  inputBox: {
-    width: width * 0.6,
-    height: 50,
-    fontSize: 24,
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     borderBottomWidth: 1,
     marginTop: 32,
     marginBottom: 16,
+  },
+  inputBox: {
+    width: 70,
+    height: 50,
+    fontSize: 24,
+    // borderBottomWidth: 1,
+    // marginBottom: 16,
   },
   submitBtn: {
     width: width * 0.8,

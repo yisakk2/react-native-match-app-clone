@@ -9,8 +9,8 @@ const Page6 = () => {
   setTimeout(() => {
     const profile = context.profile
     profile.tutorial = true
-    context.updateState(context, { profile })
     firestore().collection('users').doc(context.user.uid).update(profile)
+    context.updateState(context, { profile })
   }, 2000)
 
   return (

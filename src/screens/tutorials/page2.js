@@ -4,7 +4,7 @@ import { FirebaseContext } from '../../provider/FirebaseProvider'
 
 const Page2 = ({ navigation }) => {
   const context = React.useContext(FirebaseContext)
-  const [text, setText] = React.useState(['','','','','','','',''])
+  const [text, setText] = React.useState('')
   const [available, setAvailable] = React.useState(false)
 
   const isAvailable = text => {

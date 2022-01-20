@@ -3,6 +3,7 @@ import auth from '@react-native-firebase/auth'
 import storage from '@react-native-firebase/storage'
 import firestore from '@react-native-firebase/firestore'
 import { profile } from 'console';
+import { thisExpression } from 'babel-types';
 
 export const FirebaseContext = React.createContext();
 
@@ -12,6 +13,7 @@ export class FirebaseProvider extends React.Component {
     this.state = {
       user: null,
       profile: null,
+      image: null,
       status: 'none',
       isloading: true,
     }
@@ -77,25 +79,58 @@ export class FirebaseProvider extends React.Component {
 
     task.then(() => {
       const profile = this.state.profile
-      profile.image = 'gs://react-native-match-app.appspot.com/' & name
-      this.setState({ ...this.state, profile })
+      profile.image = name
+      // this.setState({ ...this.state, profile })
       firestore().collection('users').doc(this.state.user.uid).update(profile)
       console.log('Image uploaded to the firestore!')
-    }).catch(e => console.log('uploaded image error => ', e))
+    }).catch(e => {
+      console.log('uploaded image error => ', e)
+    })
+  }
+
+  downloadImage = async name => {
+    let reference = storage().ref(name)
+    let image = await reference.getDownloadURL()
+    this.setState({ ...this.state, image })
+  }
+
+  uploadDownloadImage = (path, name) => {
+    let reference = storage().ref(name)
+    let task = reference.putFile(path)
+
+    task.then(async () => {
+      let profile = this.state.profile
+      profile.image = name
+      // this.setState({ ...this.state, profile })
+      firestore().collection('users').doc(this.state.user.uid).update(profile)
+      console.log('Image uploaded to the firestore!')
+      const image = await reference.getDownloadURL()
+      this.setState({ ...this.state, profile, image })
+    }).catch(e => {
+      console.log('uploaded image error => ', e)
+    })
   }
 
   loadUser = async () => {
     const user = auth().currentUser
     if (user !== null) {
       const profile = await firestore().collection('users').doc(user.uid).get()
-      setInterval(() => {
+      setTimeout(() => {
         this.setState({ ...this.state, user, profile: profile._data, isloading: false })
-      }, 3000)
+      }, 2000)
+    } else {
+      setTimeout(() => {
+        this.setState({ ...this.state, user, isloading: false })
+      }, 2000)
     }
   }
 
   updateState = (prevState, newState = {}) => {
     this.setState({ ...prevState, ...newState })
+  }
+
+  updateFirestore = data => {
+    firestore().collection('users').doc(this.state.user.uid).update(data)
   }
 
   componentDidMount() {
@@ -106,6 +141,7 @@ export class FirebaseProvider extends React.Component {
     const {
       user,
       profile,
+      image,
       status,
       isloading,
     } = this.state
@@ -113,13 +149,17 @@ export class FirebaseProvider extends React.Component {
       <FirebaseContext.Provider value={{
         user,
         profile,
+        image,
         status,
         isloading,
         signIn: this.signIn,
         signUp: this.signUp,
         signOut: this.signOut,
         uploadImage: this.uploadImage,
+        downloadImage: this.downloadImage,
+        uploadDownloadImage: this.uploadDownloadImage,
         updateState: this.updateState,
+        updateFirestore: this.updateFirestore,
       }}>
         {this.props.children}
       </FirebaseContext.Provider>
