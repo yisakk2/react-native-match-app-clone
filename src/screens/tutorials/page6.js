@@ -6,11 +6,12 @@ import firestore from '@react-native-firebase/firestore'
 const Page6 = () => {
   const context = React.useContext(FirebaseContext)
   
-  setTimeout(() => {
+  setTimeout(async () => {
     const profile = context.profile
     profile.tutorial = true
     firestore().collection('users').doc(context.user.uid).update(profile)
-    context.updateState(context, { profile })
+    const image = await context.downloadImage(profile.image)
+    context.updateState(context, { profile, image })
   }, 2000)
 
   return (

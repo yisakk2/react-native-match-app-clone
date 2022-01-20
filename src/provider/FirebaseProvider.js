@@ -2,11 +2,8 @@ import * as React from 'react'
 import auth from '@react-native-firebase/auth'
 import storage from '@react-native-firebase/storage'
 import firestore from '@react-native-firebase/firestore'
-import { profile } from 'console';
-import { thisExpression } from 'babel-types';
 
 export const FirebaseContext = React.createContext();
-
 export class FirebaseProvider extends React.Component {
   constructor(props) {
     super(props)
@@ -14,6 +11,7 @@ export class FirebaseProvider extends React.Component {
       user: null,
       profile: null,
       image: null,
+      todaysCard: [],
       status: 'none',
       isloading: true,
     }
@@ -89,9 +87,9 @@ export class FirebaseProvider extends React.Component {
   }
 
   downloadImage = async name => {
-    let reference = storage().ref(name)
-    let image = await reference.getDownloadURL()
-    this.setState({ ...this.state, image })
+    const reference = storage().ref(name)
+    const image = await reference.getDownloadURL()
+    return image
   }
 
   uploadDownloadImage = (path, name) => {
@@ -110,6 +108,25 @@ export class FirebaseProvider extends React.Component {
       console.log('uploaded image error => ', e)
     })
   }
+  
+  updateState = (prevState, newState = {}) => {
+    this.setState({ ...prevState, ...newState })
+  }
+
+  updateFirestore = data => {
+    firestore().collection('users').doc(this.state.user.uid).update(data)
+  }
+
+  initialize = async () => {
+    const user = auth().currentUser
+    if (user !== null) {
+      const profile = await firestore().collection('users').doc(user.uid).get()
+      const image = await this.downloadImage(profile._data.image)
+      this.setState({ ...this.state, user, profile: profile._data, image, isloading: false })
+    } else {
+      this.setState({ ...this.state, user, isloading: false })
+    }
+  }
 
   loadUser = async () => {
     const user = auth().currentUser
@@ -125,16 +142,28 @@ export class FirebaseProvider extends React.Component {
     }
   }
 
-  updateState = (prevState, newState = {}) => {
-    this.setState({ ...prevState, ...newState })
-  }
-
-  updateFirestore = data => {
-    firestore().collection('users').doc(this.state.user.uid).update(data)
+  loadtodaysCard = async () => {
+    const todaysCard = await firestore().collection('users').doc(this.state.user.uid).collection('todaysCard').orderBy('createdAt', 'desc').get()
+    if (todaysCard.docs.length > 0) {
+      this.setState({ ...this.state, todaysCard: todaysCard.docs})
+    } else {
+      let sex = this.state.profile.sex
+      let users = await firestore().collection('users').where('sex', '!=', sex).get()
+      users.docs.sort(() => Math.random() - 0.5)
+      const todaysCard = {
+        firstPick: users.docs[0]._data,
+        secondPick: users.docs[1]._data,
+        createdAt: new Date(),
+        picked: 'none',
+      }
+      firestore().collection('users').doc(this.state.user.uid).collection('todaysCard').add(todaysCard)
+      this.setState({ ...this.state, todaysCard})
+    }
   }
 
   componentDidMount() {
-    this.loadUser()
+    // this.loadUser()
+    this.initialize()
   }
 
   render() {
@@ -142,6 +171,7 @@ export class FirebaseProvider extends React.Component {
       user,
       profile,
       image,
+      todaysCard,
       status,
       isloading,
     } = this.state
@@ -150,6 +180,7 @@ export class FirebaseProvider extends React.Component {
         user,
         profile,
         image,
+        todaysCard,
         status,
         isloading,
         signIn: this.signIn,
@@ -160,6 +191,7 @@ export class FirebaseProvider extends React.Component {
         uploadDownloadImage: this.uploadDownloadImage,
         updateState: this.updateState,
         updateFirestore: this.updateFirestore,
+        loadtodaysCard: this.loadtodaysCard,
       }}>
         {this.props.children}
       </FirebaseContext.Provider>

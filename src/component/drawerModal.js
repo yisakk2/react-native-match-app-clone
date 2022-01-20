@@ -5,7 +5,7 @@ import storage from '@react-native-firebase/storage'
 
 const DrawerModal = ({ visible, onClose, profile, charge, unlimited, block, attract, setting, notification, ask }) => {
   const context = React.useContext(FirebaseContext)
-  const [image, setImage] = React.useState('')
+  const [image, setImage] = React.useState(context.image)
 
   const getProfileImage = async () => {
     let ref = storage().ref(context.profile.image)

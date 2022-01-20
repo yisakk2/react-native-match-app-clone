@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { StyleSheet, View, Text, TouchableOpacity, Dimensions, Platform, Image } from 'react-native'
 import { FirebaseContext } from '../../provider/FirebaseProvider'
-import { request, PERMISSIONS, RESULTS } from 'react-native-permissions'
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions'
 import ImagePicker from 'react-native-image-crop-picker'
 import Icon from 'react-native-vector-icons/FontAwesome'
 
@@ -12,19 +12,59 @@ const Page5 = ({ navigation }) => {
   const [image, setImage] = React.useState('')
   const [available, setAvailable] = React.useState(false)
 
-  const checkPermission = async () => {
+  const choosePhotoFromLibrary = () => {
     if (Platform.OS === 'android') {
-      const result = await request(PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION)
-      if (result === RESULTS.GRANTED) {
-      }
+      check(PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION).then(result => {
+        switch (result) {
+          case RESULTS.DENIED:
+            console.log('The permission has not been requested / is denied but requestable');
+            request(PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION)
+            break;
+          case RESULTS.LIMITED:
+            console.log('The permission is limited: some actions are possible');
+            openLibrary()
+            break;
+          case RESULTS.GRANTED:
+            console.log('The permission is granted');
+            openLibrary()
+            break;
+          case RESULTS.BLOCKED:
+            console.log('The permission is denied and not requestable anymore');
+            Alert.alert(
+              "안내",
+              "접근 권한이 없습니다."
+            )
+            break;
+        }
+      })
     } else {
-      const result = await request(PERMISSIONS.IOS.PHOTO_LIBRARY)
-      if (result === RESULTS.GRANTED) {
-      }
+      check(PERMISSIONS.IOS.PHOTO_LIBRARY).then(result => {
+        switch (result) {
+          case RESULTS.DENIED:
+            console.log('The permission has not been requested / is denied but requestable');
+            request(PERMISSIONS.IOS.PHOTO_LIBRARY)
+            break;
+          case RESULTS.LIMITED:
+            console.log('The permission is limited: some actions are possible');
+            openLibrary()
+            break;
+          case RESULTS.GRANTED:
+            console.log('The permission is granted');
+            openLibrary()
+            break;
+          case RESULTS.BLOCKED:
+            console.log('The permission is denied and not requestable anymore');
+            Alert.alert(
+              "안내",
+              "접근 권한이 없습니다."
+            )
+            break;
+        }
+      })
     }
   }
 
-  const choosePhotoFromLibrary = () => {
+  const openLibrary = () => {
     ImagePicker.openPicker({
       width: 250,
       height: 250,

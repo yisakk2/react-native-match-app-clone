@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Dimensions } from 'react-native'
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator, Image } from 'react-native'
 import { FirebaseContext } from '../provider/FirebaseProvider'
 import Icon from 'react-native-vector-icons/Feather'
 
@@ -7,6 +7,27 @@ Icon.loadFont()
 
 const Date = ({ navigation }) => {
   const context = React.useContext(FirebaseContext)
+  const [images, setImages] = React.useState([])
+
+  React.useEffect(() => {
+    if (context.todaysCard.length === 0) context.loadtodaysCard()
+    // else setupImages()
+  }, [context.todaysCard])
+
+  const setupImages = async () => {
+    const data = context.todaysCard
+    let index = 0
+    for (let item of data.todaysCard) {
+      const array = []
+      const firstUrl = await context.downloadImage(item._data.firstPick.image)
+      const secondUrl = await context.downloadImage(item._data.secondPick.image)
+      array.push(firstUrl)
+      array.push(secondUrl)
+      // data[index] = [...item, array]
+      index++
+    }
+    // console.log(data)
+  }
 
   return (
     <View style={styles.container}>
@@ -16,36 +37,58 @@ const Date = ({ navigation }) => {
             <Text style={{fontSize:20, lineHeight:30, color:'white'}}>좋아요 무제한권</Text>
             <Text style={{fontSize:20, lineHeight:30, color:'white'}}>이벤트중</Text>
           </TouchableOpacity>
-          <View style={styles.titleCard}>
-            <Text style={styles.titleCardText}>오늘의 카드</Text>
-            <Text style={styles.titleCardText}>오늘 카드 남은 시간 19:24</Text>
-          </View>
-          <View style={styles.cardContainer}>
-            <View style={styles.cardLeft}></View>
-            <View style={styles.cardRight}>
-              <Text style={{color:'red'}}>딜랑</Text>
-              <Text style={{fontSize:12,color:'red'}}>(경기, 20대 중반)</Text>
-              <View style={{height:10}}></View>
-              <Text style={{fontSize:12}}>일반, 학생</Text>
-              <Text style={{fontSize:12}}>보통체형, B형</Text>
-              <View style={styles.lockIcon}>
-                <Icon name="lock" color={'white'} size={24} />
+          {context.todaysCard.length > 0 ? (
+            context.todaysCard.map(item => (
+              <View key={1}>
+                <View style={styles.titleCard}>
+                  <Text style={styles.titleCardText}>오늘의 카드</Text>
+                  <Text style={styles.titleCardText}>오늘 카드 남은 시간 19:24</Text>
+                </View>
+                <TouchableOpacity style={styles.cardContainer}>
+                  <View style={styles.cardLeft}></View>
+                  {/* {images.length > 0 ? 
+                    <Image
+                      style={styles.cardLeft}
+                    />
+                  : <View style={styles.cardLeft}></View>
+                  } */}
+                  <View style={styles.cardRight}>
+                    <Text style={{color:'red'}}>{item._data.firstPick.nickname}</Text>
+                    <Text style={{fontSize:12,color:'red'}}>(경기, 20대 중반)</Text>
+                    <View style={{height:10}}></View>
+                    <Text style={{fontSize:12}}>일반, 학생</Text>
+                    <Text style={{fontSize:12}}>보통체형, B형</Text>
+                    {item._data.picked === 'first' && 
+                      <View style={styles.lockIcon}>
+                        <Icon name="lock" color={'white'} size={24} />
+                      </View>
+                    }
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.cardContainer}>
+                  <View style={styles.cardLeft}></View>
+                  <View style={styles.cardRight}>
+                    <Text style={{color:'red'}}>{item._data.secondPick.nickname}</Text>
+                    <Text style={{fontSize:12,color:'red'}}>(경기, 20대 중반)</Text>
+                    <View style={{height:10}}></View>
+                    <Text style={{fontSize:12}}>일반, 학생</Text>
+                    <Text style={{fontSize:12}}>보통체형, B형</Text>
+                    {item._data.picked === 'second' && 
+                      <View style={styles.lockIcon}>
+                        <Icon name="lock" color={'white'} size={24} />
+                      </View>
+                    }
+                  </View>
+                </TouchableOpacity>
               </View>
+            ))
+          ):(
+            // 로딩 컴포넌트
+            <View style={{height: 200, justifyContent: 'center'}}>
+              <ActivityIndicator size="large" color="black" />
             </View>
-          </View>
-          <View style={styles.cardContainer}>
-            <View style={styles.cardLeft}></View>
-            <View style={styles.cardRight}>
-              <Text style={{color:'red'}}>딜랑</Text>
-              <Text style={{fontSize:12,color:'red'}}>(경기, 20대 중반)</Text>
-              <View style={{height:10}}></View>
-              <Text style={{fontSize:12}}>일반, 학생</Text>
-              <Text style={{fontSize:12}}>보통체형, B형</Text>
-              <View style={styles.lockIcon}>
-                <Icon name="lock" color={'white'} size={24} />
-              </View>
-            </View>
-          </View>
+          )
+          }
         </View>
       </ScrollView>
     </View>
@@ -94,7 +137,7 @@ const styles = StyleSheet.create({
     // aspectRatio: 1,
     borderTopLeftRadius: 10,
     borderBottomLeftRadius: 10,
-    backgroundColor: 'black'
+    backgroundColor: 'lightgrey'
   },
   cardRight: {
     width: '52%',
