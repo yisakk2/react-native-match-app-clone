@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator, Image } from 'react-native'
 import { FirebaseContext } from '../provider/FirebaseProvider'
+import { calcTimeLeft, calcAgeGroup } from '../misc/helper'
 import Icon from 'react-native-vector-icons/Feather'
 
 Icon.loadFont()
@@ -41,7 +42,7 @@ const Date = ({ navigation }) => {
               <View key={item._data.createdAt.toString()}>
                 <View style={styles.titleCard}>
                   <Text style={styles.titleCardText}>오늘의 카드</Text>
-                  <Text style={styles.titleCardText}>오늘 카드 남은 시간 19:24</Text>
+                  <Text style={styles.titleCardText}>오늘 카드 남은 시간 {calcTimeLeft(item._data.createdAt)}</Text>
                 </View>
                 <TouchableOpacity style={styles.cardContainer}>
                   {item.images !== undefined ? 
@@ -54,10 +55,10 @@ const Date = ({ navigation }) => {
                   }
                   <View style={styles.cardRight}>
                     <Text style={{color:'red'}}>{item._data.firstPick.nickname}</Text>
-                    <Text style={{fontSize:12,color:'red'}}>(경기, 20대 중반)</Text>
+                    <Text style={{fontSize:12,color:'red'}}>({item._data.firstPick.region}, {calcAgeGroup(item._data.firstPick.age)})</Text>
                     <View style={{height:10}}></View>
-                    <Text style={{fontSize:12}}>일반, 학생</Text>
-                    <Text style={{fontSize:12}}>보통체형, B형</Text>
+                    <Text style={{fontSize:12}}>{item._data.firstPick.job}</Text>
+                    <Text style={{fontSize:12}}>{item._data.firstPick.bodyShape}, {item._data.firstPick.bloodType}</Text>
                     {item._data.picked === 'first' && 
                       <View style={styles.lockIcon}>
                         <Icon name="lock" color={'white'} size={24} />
@@ -76,10 +77,10 @@ const Date = ({ navigation }) => {
                   }
                   <View style={styles.cardRight}>
                     <Text style={{color:'red'}}>{item._data.secondPick.nickname}</Text>
-                    <Text style={{fontSize:12,color:'red'}}>(경기, 20대 중반)</Text>
+                    <Text style={{fontSize:12,color:'red'}}>({item._data.secondPick.region}, {calcAgeGroup(item._data.secondPick.age)})</Text>
                     <View style={{height:10}}></View>
-                    <Text style={{fontSize:12}}>일반, 학생</Text>
-                    <Text style={{fontSize:12}}>보통체형, B형</Text>
+                    <Text style={{fontSize:12}}>{item._data.secondPick.job}</Text>
+                    <Text style={{fontSize:12}}>{item._data.secondPick.bodyShape}, {item._data.secondPick.bloodType}</Text>
                     {item._data.picked === 'second' && 
                       <View style={styles.lockIcon}>
                         <Icon name="lock" color={'white'} size={24} />
