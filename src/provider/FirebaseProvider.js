@@ -56,12 +56,13 @@ export class FirebaseProvider extends React.Component {
         })
         .then(() => {
           console.log('firestore complete')
+          auth().signOut()
+          this.setState({ ...this.state, status: 'complete' })
         })
         .catch(e => {
           console.log('firestore failed', e)
+          this.setState({ ...this.state, status: 'signuperror' })
         })
-        auth().signOut()
-        this.setState({ ...this.state, status: 'complete' })
       })
       .catch(e => {
         console.log(e)
@@ -79,9 +80,9 @@ export class FirebaseProvider extends React.Component {
     let task = reference.putFile(path)
 
     task.then(() => {
-      const profile = this.state.profile
+      let profile = this.state.profile
       profile.image = name
-      // this.setState({ ...this.state, profile })
+      this.setState({ ...this.state, profile })
       firestore().collection('users').doc(this.state.user.uid).update(profile)
       console.log('Image uploaded to the firestore!')
     }).catch(e => {
@@ -90,6 +91,7 @@ export class FirebaseProvider extends React.Component {
   }
 
   downloadImage = async name => {
+    if (name === '') return null
     const reference = storage().ref(name)
     const image = await reference.getDownloadURL()
     return image
@@ -100,16 +102,27 @@ export class FirebaseProvider extends React.Component {
     let task = reference.putFile(path)
 
     task.then(async () => {
-      const profile = this.state.profile
+      let profile = this.state.profile
       profile.image = name
-      // this.setState({ ...this.state, profile })
       firestore().collection('users').doc(this.state.user.uid).update(profile)
-      console.log('Image uploaded to the firestore!')
       const image = await reference.getDownloadURL()
       this.setState({ ...this.state, profile, image })
+      console.log('Image uploaded to the firestore and downloaded the image!')
     }).catch(e => {
       console.log('uploaded image error => ', e)
     })
+  }
+
+  pickCard = profile => {
+    const card = {
+      createdAt: new Date(),
+      sender: this.state.user.uid,
+      receiver: profile.id,
+      senderOpened: false,
+      receiverOpened: false,
+      available: true,
+    }
+    firestore().collection('cards').add(card)
   }
   
   updateState = (prevState, newState = {}) => {
@@ -136,21 +149,31 @@ export class FirebaseProvider extends React.Component {
   }
 
   loadtodaysCard = async () => {
-    const todaysCard = await firestore().collection('users').doc(this.state.user.uid).collection('todaysCard').orderBy('createdAt', 'desc').get()
+    let todaysCard = await firestore().collection('users').doc(this.state.user.uid).collection('todaysCard').orderBy('createdAt', 'desc').get()
     if (todaysCard.docs.length > 0) {
+      let index = 0
+      for (let item of todaysCard.docs) {
+        let images = []
+        const firstUrl = await this.downloadImage(item._data.firstPick.image)
+        const secondUrl = await this.downloadImage(item._data.secondPick.image)
+        images.push(firstUrl)
+        images.push(secondUrl)
+        todaysCard.docs[index] = {...item, images}
+        index++
+      }
       this.setState({ ...this.state, todaysCard: todaysCard.docs})
     } else {
-      let sex = this.state.profile.sex
-      let users = await firestore().collection('users').where('sex', '!=', sex).get()
+      let users = await firestore().collection('users').where('sex', '!=', this.state.profile.sex).get()
       users.docs.sort(() => Math.random() - 0.5)
-      const todaysCard = {
+      const data = {
         firstPick: users.docs[0]._data,
         secondPick: users.docs[1]._data,
         createdAt: new Date(),
         picked: 'none',
       }
-      firestore().collection('users').doc(this.state.user.uid).collection('todaysCard').add(todaysCard)
-      this.setState({ ...this.state, todaysCard})
+      firestore().collection('users').doc(this.state.user.uid).collection('todaysCard').add(data).then(() => {
+        this.loadtodaysCard()
+      })
     }
   }
 
@@ -196,6 +219,7 @@ export class FirebaseProvider extends React.Component {
         uploadImage: this.uploadImage,
         downloadImage: this.downloadImage,
         uploadDownloadImage: this.uploadDownloadImage,
+        pickCard: this.pickCard,
         updateState: this.updateState,
         updateFirestore: this.updateFirestore,
         loadtodaysCard: this.loadtodaysCard,

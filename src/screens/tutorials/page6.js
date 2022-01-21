@@ -7,7 +7,7 @@ const Page6 = () => {
   const context = React.useContext(FirebaseContext)
   
   setTimeout(async () => {
-    const profile = context.profile
+    let profile = context.profile
     profile.tutorial = true
     firestore().collection('users').doc(context.user.uid).update(profile)
     const image = await context.downloadImage(profile.image)

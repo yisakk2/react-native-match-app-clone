@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator, Image } from 'react-native'
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator, Image, Alert } from 'react-native'
 import { FirebaseContext } from '../provider/FirebaseProvider'
 import { calcTimeLeft, calcAgeGroup } from '../misc/helper'
 import Icon from 'react-native-vector-icons/Feather'
@@ -8,11 +8,10 @@ Icon.loadFont()
 
 const Date = ({ navigation }) => {
   const context = React.useContext(FirebaseContext)
-
+  
   React.useEffect(() => {
-    if (context.todaysCard.length === 0) context.loadtodaysCard()
-    else setupImages()
-  }, [context.todaysCard])
+    context.loadtodaysCard()
+  }, [])
 
   const setupImages = async () => {
     const data = context.todaysCard
@@ -29,6 +28,48 @@ const Date = ({ navigation }) => {
     context.updateState(context, { todaysCard: data })
   }
 
+  const handlePick = (state, card, choice) => {
+    if (state == 'none') {
+      Alert.alert(
+        '프로필을 열어볼까요?',
+        '두 개의 카드 중 하나의 프로필을 무료로 열업로 수 있습니다.',
+        [
+          {text: "취소"},
+          {text: "확인", onPress: () => navigation.navigate('PartnerProfile', { profile: choice === 'first' ? card._data.firstPick : card_data.secondPick })}
+        ]
+      )
+    } else if (state == 'locked') {
+      Alert.alert(
+        '카드를 한장 더 열어볼까요?',
+        '하트 5개를 사용합니다.',
+        [
+          {text: "취소"},
+          {text: "확인", onPress: () => console.log("OK Pressed")}
+        ]
+      )
+    } else {
+      navigation.navigate('PartnerProfile', { profile: choice === 'first' ? card._data.firstPick : card_data.secondPick })
+    }
+  }
+
+  const unlockCard = async (card, choice) => {
+    const todaysCard = context.todaysCard
+    
+    for (let item of todaysCard) {
+      if (item.id === card.id) {
+        if (card._data.picked === 'none') {
+          item._data.picked = choice === 'first' ? 'second' : 'first'
+        } else {
+          item._data.picked = 'both'
+        }
+      }
+    }
+
+    context.updateState(context, {todaysCard})
+    this.picked(card._data.secondPick)
+    navigation.navigate('PartnerProfile', { profile: choice === 'first' ? card._data.firstPick : card._data.secondPick })
+  }
+  
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -44,7 +85,20 @@ const Date = ({ navigation }) => {
                   <Text style={styles.titleCardText}>오늘의 카드</Text>
                   <Text style={styles.titleCardText}>오늘 카드 남은 시간 {calcTimeLeft(item._data.createdAt)}</Text>
                 </View>
-                <TouchableOpacity style={styles.cardContainer}>
+                <TouchableOpacity 
+                  style={styles.cardContainer}
+                  onPress={() => {
+                    switch(item._data.picked) {
+                      case 'none':
+                        return handlePick('none', item, item._data.firstPick)
+                      case 'first' || 'both':
+                        return handlePick('unlocked', item, item._data.firstPick)
+                      case 'second':
+                        return handlePick('locked', item, item._data.firstPick)
+                        
+                    }
+                  }}
+                >
                   {item.images !== undefined ? 
                     <Image
                       style={styles.cardLeft}
@@ -66,7 +120,19 @@ const Date = ({ navigation }) => {
                     }
                   </View>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.cardContainer}>
+                <TouchableOpacity 
+                  style={styles.cardContainer}
+                  onPress={() => {
+                    switch(item._data.picked) {
+                      case 'none':
+                        return handlePick('none', item, item._data.secondPick)
+                      case 'first':
+                        return handlePick('locked', item, item._data.secondPick)
+                      case 'second' || 'both':
+                        return handlePick('unlocked', item, item._data.secondPick)
+                    }
+                  }}
+                >
                   {item.images ? 
                     <Image
                       style={styles.cardLeft}

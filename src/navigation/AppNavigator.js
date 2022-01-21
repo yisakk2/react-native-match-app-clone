@@ -18,6 +18,7 @@ import Attract from '../screens/attract'
 import Setting from '../screens/setting'
 import Notification from '../screens/notification'
 import Ask from '../screens/ask'
+import PartnerProfile from '../screens/partnerProfile'
 // component
 import DrawerModal from '../component/drawerModal'
 import { StyleSheet, View, TouchableOpacity } from 'react-native'
@@ -134,6 +135,13 @@ const AppNavigator = () => {
         <Stack.Screen name="Setting" component={Setting} options={{headerTitle: '설정'}} />
         <Stack.Screen name="Notification" component={Notification} options={{headerTitle: '공지/FAQ'}} />
         <Stack.Screen name="Ask" component={Ask} options={{headerTitle: '1:1 문의'}} />
+        <Stack.Screen 
+          name="PartnerProfile" 
+          component={PartnerProfile} 
+          options={({ route, }) => ({
+            title: route.params.profile.nickname
+          })} 
+        />
       </Stack.Navigator>
       <DrawerModal 
         visible={modalVisible === 'visible' ? true : false}

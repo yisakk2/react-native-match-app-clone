@@ -4,7 +4,13 @@ export const calcTimeLeft = createdAt => {
   const TimeLeft = past - now + (1000 * 3600 * 24)
   const hh = parseInt(TimeLeft / 1000 / 3600) 
   const mm = parseInt(TimeLeft / 1000 / 60 - hh * 60)
-  return `${hh}:${mm}`
+  if (hh < 10 && mm < 10) {
+    return `0${hh}:0${mm}` 
+  } else if (hh < 10) {
+    return `0${hh}:${mm}`
+  } else if (mm < 10) {
+    return `${hh}:0${mm}`
+  } else return `${hh}:${mm}`
 }
 
 export const calcAgeGroup = age => {

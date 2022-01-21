@@ -58,57 +58,59 @@ const SignUp = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView style={{padding: 16}}>
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>이메일</Text>
-          <TextInput
-            style={styles.inputBox}
-            placeholder="이메일을 입력하세요"
-            onChangeText={text => setEmail(text)}
-            autoCapitalize={'none'}
-          />
+      <ScrollView>
+        <View style={{alignItems: 'center', padding: 16}}>
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>이메일</Text>
+            <TextInput
+              style={styles.inputBox}
+              placeholder="이메일을 입력하세요"
+              onChangeText={text => setEmail(text)}
+              autoCapitalize={'none'}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>비밀번호</Text>
+            <TextInput
+              style={styles.inputBox}
+              placeholder="패스워드를 입력하세요"
+              onChangeText={text => setPassword(text)}
+              secureTextEntry={true}
+              autoCapitalize={'none'}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>비밀번호 확인</Text>
+            <TextInput
+              style={styles.inputBox}
+              placeholder="패스워드를 재입력하세요"
+              onChangeText={text => {
+                setPasswordCheck(text)
+                compare(text)
+              }}
+              secureTextEntry={true}
+              autoCapitalize={'none'}
+            />
+            {!isIdentical && <Text style={[styles.inputLabel, {color: 'red'}]}>패스워드가 일치하지 않습니다.</Text>}
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>핸드폰</Text>
+            <TextInput
+              style={styles.inputBox}
+              placeholder="핸드폰번호를 입력하세요"
+              keyboardType='number-pad'
+              onChangeText={text => setPhone(text)}
+              autoCapitalize={'none'}
+              maxLength={11}
+            />
+          </View>
+          <TouchableOpacity
+            style={styles.submitBtn}
+            onPress={handleSignUp}
+          >
+            <Text style={{color: 'white', textAlign: 'center'}}>회원가입</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>비밀번호</Text>
-          <TextInput
-            style={styles.inputBox}
-            placeholder="패스워드를 입력하세요"
-            onChangeText={text => setPassword(text)}
-            secureTextEntry={true}
-            autoCapitalize={'none'}
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>비밀번호 확인</Text>
-          <TextInput
-            style={styles.inputBox}
-            placeholder="패스워드를 재입력하세요"
-            onChangeText={text => {
-              setPasswordCheck(text)
-              compare(text)
-            }}
-            secureTextEntry={true}
-            autoCapitalize={'none'}
-          />
-          {!isIdentical && <Text style={[styles.inputLabel, {color: 'red'}]}>패스워드가 일치하지 않습니다.</Text>}
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>핸드폰</Text>
-          <TextInput
-            style={styles.inputBox}
-            placeholder="핸드폰번호를 입력하세요"
-            keyboardType='number-pad'
-            onChangeText={text => setPhone(text)}
-            autoCapitalize={'none'}
-            maxLength={11}
-          />
-        </View>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={handleSignUp}
-        >
-          <Text style={{color: 'white', textAlign: 'center'}}>회원가입</Text>
-        </TouchableOpacity>
       </ScrollView>
       <Loading visible={context.status === 'loading' ? true : false} />
     </View>
