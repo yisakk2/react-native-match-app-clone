@@ -15,7 +15,7 @@ const SignIn = ({ navigation }) => {
         "아이디나 패스워드를 다시 확인해주세요."
       )
     }
-    context.signIn(email, password)
+    else context.signIn(email, password)
   }
 
   React.useEffect(() => {
@@ -23,10 +23,10 @@ const SignIn = ({ navigation }) => {
       Alert.alert(
         "로그인 실패",
         "아이디나 패스워드를 다시 확인해주세요."
-      )
+      ),
       context.updateState(context, {status: 'complete'})
     }
-  })
+  }, [context.status])
 
   return (
     <View style={styles.container}>

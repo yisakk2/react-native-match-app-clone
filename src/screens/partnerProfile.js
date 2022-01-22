@@ -3,9 +3,7 @@ import { StyleSheet, View, Text } from 'react-native'
 
 const PartnerProfile = ({ route }) => {
   const { profile } = route.params
-
-  console.log(profile)
-
+  
   return (
     <View style={styles.container}>
       <Text>PartnerProfile</Text>

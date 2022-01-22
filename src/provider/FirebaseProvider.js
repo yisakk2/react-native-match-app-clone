@@ -53,6 +53,7 @@ export class FirebaseProvider extends React.Component {
           image: '',
           sex: 'male',
           tutorial: false,
+          heart: 15,
         })
         .then(() => {
           console.log('firestore complete')
@@ -83,8 +84,8 @@ export class FirebaseProvider extends React.Component {
       let profile = this.state.profile
       profile.image = name
       this.setState({ ...this.state, profile })
-      firestore().collection('users').doc(this.state.user.uid).update(profile)
-      console.log('Image uploaded to the firestore!')
+      // firestore().collection('users').doc(this.state.user.uid).update(profile)
+      console.log('Image uploaded to the storage!')
     }).catch(e => {
       console.log('uploaded image error => ', e)
     })
@@ -113,16 +114,17 @@ export class FirebaseProvider extends React.Component {
     })
   }
 
-  pickCard = profile => {
+  pickCard = (todaysCard, index) => {
     const card = {
       createdAt: new Date(),
       sender: this.state.user.uid,
-      receiver: profile.id,
-      senderOpened: false,
+      receiver: todaysCard._data.users[index],
+      senderOpened: true,
       receiverOpened: false,
       available: true,
     }
-    firestore().collection('cards').add(card)
+    firestore().collection('users').doc(this.state.user.uid).collection('todaysCard').doc(todaysCard.id).update(todaysCard._data).then(() => console.log('haha'))
+    firestore().collection('cards').add(card).then(() => console.log('Card uploaded to the firestore!'))
   }
   
   updateState = (prevState, newState = {}) => {
@@ -154,11 +156,16 @@ export class FirebaseProvider extends React.Component {
       let index = 0
       for (let item of todaysCard.docs) {
         let images = []
-        const firstUrl = await this.downloadImage(item._data.firstPick.image)
-        const secondUrl = await this.downloadImage(item._data.secondPick.image)
+        let profiles = []
+        const firstProfile = await firestore().collection('users').doc(item._data.users[0]).get()
+        const secondProfile = await firestore().collection('users').doc(item._data.users[1]).get()
+        const firstUrl = await this.downloadImage(firstProfile._data.image)
+        const secondUrl = await this.downloadImage(secondProfile._data.image)
         images.push(firstUrl)
         images.push(secondUrl)
-        todaysCard.docs[index] = {...item, images}
+        profiles.push(firstProfile._data)
+        profiles.push(secondProfile._data)
+        todaysCard.docs[index] = {...item, images, profiles, id: item.id}
         index++
       }
       this.setState({ ...this.state, todaysCard: todaysCard.docs})
@@ -166,8 +173,7 @@ export class FirebaseProvider extends React.Component {
       let users = await firestore().collection('users').where('sex', '!=', this.state.profile.sex).get()
       users.docs.sort(() => Math.random() - 0.5)
       const data = {
-        firstPick: users.docs[0]._data,
-        secondPick: users.docs[1]._data,
+        users: [users.docs[0].id, users.docs[1].id],
         createdAt: new Date(),
         picked: 'none',
       }

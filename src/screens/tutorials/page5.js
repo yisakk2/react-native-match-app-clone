@@ -3,6 +3,8 @@ import { StyleSheet, View, Text, TouchableOpacity, Dimensions, Platform, Image }
 import { FirebaseContext } from '../../provider/FirebaseProvider'
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions'
 import ImagePicker from 'react-native-image-crop-picker'
+import storage from '@react-native-firebase/storage'
+import Loading from '../../component/loading'
 import Icon from 'react-native-vector-icons/FontAwesome'
 
 Icon.loadFont()
@@ -77,10 +79,23 @@ const Page5 = ({ navigation }) => {
   }
 
   const submit = () => {
+    context.updateState(context, { status: 'loading' })
     let filename = image.split('/')
     filename = filename[filename.length - 1]
-    context.uploadImage(image, filename)
-    navigation.navigate('Page6')
+    let reference = storage().ref(filename)
+    let task = reference.putFile(image)
+
+    task.then(() => {
+      let profile = context.profile
+      profile.image = filename
+      context.updateState(context, { profile, status: 'none' })
+      navigation.navigate('Page6')
+      console.log('Image uploaded to the storage!')
+    }).catch(e => {
+      console.log('uploaded image error => ', e)
+    })
+
+
   }
   
   return (
@@ -104,6 +119,7 @@ const Page5 = ({ navigation }) => {
       >
         <Text style={{fontSize: 18, textAlign: 'center', color: available ? 'white' : 'grey'}}>완료</Text>
       </TouchableOpacity>
+      <Loading visible={context.status === 'loading' ? true : false} />
     </View>
   );
 }

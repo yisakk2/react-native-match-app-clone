@@ -13,29 +13,15 @@ const Date = ({ navigation }) => {
     context.loadtodaysCard()
   }, [])
 
-  const setupImages = async () => {
-    const data = context.todaysCard
-    let index = 0
-    for (let item of data) {
-      const images = []
-      const firstUrl = await context.downloadImage(item._data.firstPick.image)
-      const secondUrl = await context.downloadImage(item._data.secondPick.image)
-      images.push(firstUrl)
-      images.push(secondUrl)
-      data[index] = {...item, images}
-      index++
-    }
-    context.updateState(context, { todaysCard: data })
-  }
-
-  const handlePick = (state, card, choice) => {
+  const handlePick = (state, card, index) => {
     if (state == 'none') {
       Alert.alert(
         '프로필을 열어볼까요?',
         '두 개의 카드 중 하나의 프로필을 무료로 열업로 수 있습니다.',
         [
           {text: "취소"},
-          {text: "확인", onPress: () => navigation.navigate('PartnerProfile', { profile: choice === 'first' ? card._data.firstPick : card_data.secondPick })}
+          {text: "확인", onPress: () => unlockCard(card, index)}
+          // {text: "확인", onPress: () => navigation.navigate('PartnerProfile', { profile: card.profiles[index] })}
         ]
       )
     } else if (state == 'locked') {
@@ -44,30 +30,32 @@ const Date = ({ navigation }) => {
         '하트 5개를 사용합니다.',
         [
           {text: "취소"},
-          {text: "확인", onPress: () => console.log("OK Pressed")}
+          {text: "확인", onPress: () => unlockCard(card, index)}
         ]
       )
     } else {
-      navigation.navigate('PartnerProfile', { profile: choice === 'first' ? card._data.firstPick : card_data.secondPick })
+      navigation.navigate('PartnerProfile', { profile: card.profiles[index] })
     }
   }
 
-  const unlockCard = async (card, choice) => {
-    const todaysCard = context.todaysCard
-    
+  const unlockCard = async (card, index) => {
+    let todaysCard = context.todaysCard
+    let num = 0
+
     for (let item of todaysCard) {
       if (item.id === card.id) {
         if (card._data.picked === 'none') {
-          item._data.picked = choice === 'first' ? 'second' : 'first'
+          todaysCard[num]._data.picked = index === 0 ? 'first' : 'second'
         } else {
-          item._data.picked = 'both'
+          todaysCard[num]._data.picked = 'both'
         }
+        num++
       }
     }
 
     context.updateState(context, {todaysCard})
-    this.picked(card._data.secondPick)
-    navigation.navigate('PartnerProfile', { profile: choice === 'first' ? card._data.firstPick : card._data.secondPick })
+    context.pickCard(card, index)
+    navigation.navigate('PartnerProfile', { profile: card.profiles[index] })
   }
   
   return (
@@ -90,11 +78,11 @@ const Date = ({ navigation }) => {
                   onPress={() => {
                     switch(item._data.picked) {
                       case 'none':
-                        return handlePick('none', item, item._data.firstPick)
+                        return handlePick('none', item, 0)
                       case 'first' || 'both':
-                        return handlePick('unlocked', item, item._data.firstPick)
+                        return handlePick('unlocked', item, 0)
                       case 'second':
-                        return handlePick('locked', item, item._data.firstPick)
+                        return handlePick('locked', item, 0)
                         
                     }
                   }}
@@ -108,12 +96,12 @@ const Date = ({ navigation }) => {
                     <View style={styles.cardLeft}></View>
                   }
                   <View style={styles.cardRight}>
-                    <Text style={{color:'red'}}>{item._data.firstPick.nickname}</Text>
-                    <Text style={{fontSize:12,color:'red'}}>({item._data.firstPick.region}, {calcAgeGroup(item._data.firstPick.age)})</Text>
+                    <Text style={{color:'red'}}>{item.profiles[0].nickname}</Text>
+                    <Text style={{fontSize:12,color:'red'}}>({item.profiles[0].region}, {calcAgeGroup(item.profiles[0].age)})</Text>
                     <View style={{height:10}}></View>
-                    <Text style={{fontSize:12}}>{item._data.firstPick.job}</Text>
-                    <Text style={{fontSize:12}}>{item._data.firstPick.bodyShape}, {item._data.firstPick.bloodType}</Text>
-                    {item._data.picked === 'first' && 
+                    <Text style={{fontSize:12}}>{item.profiles[0].job}</Text>
+                    <Text style={{fontSize:12}}>{item.profiles[0].bodyShape}, {item.profiles[0].bloodType}</Text>
+                    {item._data.picked === 'second' && 
                       <View style={styles.lockIcon}>
                         <Icon name="lock" color={'white'} size={24} />
                       </View>
@@ -125,11 +113,11 @@ const Date = ({ navigation }) => {
                   onPress={() => {
                     switch(item._data.picked) {
                       case 'none':
-                        return handlePick('none', item, item._data.secondPick)
+                        return handlePick('none', item, 1)
                       case 'first':
-                        return handlePick('locked', item, item._data.secondPick)
+                        return handlePick('locked', item, 1)
                       case 'second' || 'both':
-                        return handlePick('unlocked', item, item._data.secondPick)
+                        return handlePick('unlocked', item, 1)
                     }
                   }}
                 >
@@ -142,12 +130,12 @@ const Date = ({ navigation }) => {
                     <View style={styles.cardLeft}></View>
                   }
                   <View style={styles.cardRight}>
-                    <Text style={{color:'red'}}>{item._data.secondPick.nickname}</Text>
-                    <Text style={{fontSize:12,color:'red'}}>({item._data.secondPick.region}, {calcAgeGroup(item._data.secondPick.age)})</Text>
+                    <Text style={{color:'red'}}>{item.profiles[1].nickname}</Text>
+                    <Text style={{fontSize:12,color:'red'}}>({item.profiles[1].region}, {calcAgeGroup(item.profiles[1].age)})</Text>
                     <View style={{height:10}}></View>
-                    <Text style={{fontSize:12}}>{item._data.secondPick.job}</Text>
-                    <Text style={{fontSize:12}}>{item._data.secondPick.bodyShape}, {item._data.secondPick.bloodType}</Text>
-                    {item._data.picked === 'second' && 
+                    <Text style={{fontSize:12}}>{item.profiles[1].job}</Text>
+                    <Text style={{fontSize:12}}>{item.profiles[1].bodyShape}, {item.profiles[1].bloodType}</Text>
+                    {item._data.picked === 'first' && 
                       <View style={styles.lockIcon}>
                         <Icon name="lock" color={'white'} size={24} />
                       </View>
