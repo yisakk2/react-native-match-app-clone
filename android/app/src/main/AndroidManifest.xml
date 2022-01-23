@@ -48,11 +48,13 @@
       <meta-data  android:name="com.dieam.reactnativepushnotification.notification_foreground"
                   android:value="true"/>
       <meta-data  android:name="com.dieam.reactnativepushnotification.notification_channel_name"
-                  android:value="Example-Channel"/>
+                  android:value="MatchApp Channel"/>
       <meta-data  android:name="com.dieam.reactnativepushnotification.notification_channel_description"
-                  android:value="Super channel description"/>
+                  android:value="MatchApp channel description"/>
       <meta-data  android:name="com.dieam.reactnativepushnotification.notification_color"
                   android:resource="@android:color/white"/>  
+      <meta-data  android:name="com.dieam.reactnativepushnotification.default_notification_channel_id"
+                  android:value="@string/default_notification_channel_id" />
       <!-- push notification added part end -->
     </application>
 </manifest>

@@ -9,7 +9,8 @@ import Choice from '../screens/choice'
 import Connect from '../screens/connect'
 import Location from '../screens/location'
 import Charge from '../screens/charge'
-import Message from '../screens/message'
+import Chat from '../screens/chat'
+import ChatRoom from '../screens/chatRoom'
 import Card from '../screens/card'
 import MyProfile from '../screens/myProfile'
 import Unlimited from '../screens/unlimited'
@@ -109,7 +110,7 @@ const AppNavigator = () => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.icon}
-                  onPress={() => navigation.navigate('Message')}
+                  onPress={() => navigation.navigate('Chat')}
                   visible={false}
                 >
                   <Icon name="message-square" size={24} />
@@ -125,7 +126,8 @@ const AppNavigator = () => {
             )
           }}
         />
-        <Stack.Screen name="Message" component={Message} options={{headerTitle: '대화'}} />
+        <Stack.Screen name="Chat" component={Chat} options={{headerTitle: '대화'}} />
+        <Stack.Screen name="ChatRoom" component={ChatRoom} options={({ route, }) => ({title: route.params.profile.nickname})} />
         <Stack.Screen name="Card" component={Card} options={{headerTitle: '카드리스트'}} />
         <Stack.Screen name="MyProfile" component={MyProfile} options={{headerTitle: '내 프로필'}} />
         <Stack.Screen name="Charge" component={Charge} options={{headerTitle: '하트충전'}} />

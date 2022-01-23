@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Dimensions, Activ
 import { FirebaseContext } from '../provider/FirebaseProvider'
 import { calcTimeLeft, calcAgeGroup } from '../misc/helper'
 import Icon from 'react-native-vector-icons/Feather'
+import messaging from '@react-native-firebase/messaging'
 
 Icon.loadFont()
 
@@ -34,7 +35,7 @@ const Date = ({ navigation }) => {
         ]
       )
     } else {
-      navigation.navigate('PartnerProfile', { profile: card.profiles[index] })
+      navigation.navigate('PartnerProfile', { profile: card.profiles[index], id: card.id })
     }
   }
 
@@ -55,7 +56,7 @@ const Date = ({ navigation }) => {
 
     context.updateState(context, {todaysCard})
     context.pickCard(card, index)
-    navigation.navigate('PartnerProfile', { profile: card.profiles[index] })
+    navigation.navigate('PartnerProfile', { profile: card.profiles[index], id: card.id })
   }
   
   return (

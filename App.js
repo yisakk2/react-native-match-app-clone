@@ -6,7 +6,6 @@ import LoadingPage from './src/screens/loadingPage'
 import FirebaseProvider, { FirebaseContext }  from './src/provider/FirebaseProvider'
 import { NavigationContainer } from '@react-navigation/native'
 
-
 export default function App() {
   return (
     <FirebaseProvider>

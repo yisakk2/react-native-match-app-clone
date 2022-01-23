@@ -2,6 +2,7 @@ export const calcTimeLeft = createdAt => {
   const now = new Date()
   const past = createdAt.toDate()
   const TimeLeft = past - now + (1000 * 3600 * 24)
+  if (TimeLeft < 0) return 'remove'
   const hh = parseInt(TimeLeft / 1000 / 3600) 
   const mm = parseInt(TimeLeft / 1000 / 60 - hh * 60)
   if (hh < 10 && mm < 10) {

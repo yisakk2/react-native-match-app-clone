@@ -7,21 +7,22 @@ const Page6 = () => {
   const context = React.useContext(FirebaseContext)
 
   React.useEffect(() => {
-    // setTimeout(() => {
-    //   let profile = context.profile
-    //   profile.tutorial = true
-    //   firestore().collection('users').doc(context.user.uid).update(profile).then(async () => {
-    //     const image = await context.downloadImage(profile.image)
-    //     context.updateState(context, { profile, image })
-    //   })
-    // }, 2000)
+    // let profile = context.profile
+    // profile.tutorial = true
+    // firestore().collection('users').doc(context.user.uid).update(profile).then(async () => {
+    //   const image = await context.downloadImage(profile.image)
+    //   context.updateState(context, { profile, image })
+    // })
+    initialize()
+  }, [])
+
+  const initialize = async () => {
     let profile = context.profile
     profile.tutorial = true
-    firestore().collection('users').doc(context.user.uid).update(profile).then(async () => {
-      const image = await context.downloadImage(profile.image)
-      context.updateState(context, { profile, image })
-    })
-  }, [])
+    await firestore().collection('users').doc(context.user.uid).update(profile)
+    const image = await context.downloadImage(profile.image)
+    context.updateState(context, { profile, image })
+  }
 
   return (
     <View style={styles.container}>

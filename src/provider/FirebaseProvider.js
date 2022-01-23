@@ -2,6 +2,7 @@ import * as React from 'react'
 import auth from '@react-native-firebase/auth'
 import storage from '@react-native-firebase/storage'
 import firestore from '@react-native-firebase/firestore'
+import { calcTimeLeft } from '../misc/helper'
 
 export const FirebaseContext = React.createContext();
 export class FirebaseProvider extends React.Component {
@@ -39,7 +40,9 @@ export class FirebaseProvider extends React.Component {
     auth()
       .createUserWithEmailAndPassword(email, password)
       .then(user => {
-        firestore().collection('users').doc(user.user.uid).set({
+        let id = user.user.uid
+        firestore().collection('users').doc(id).set({
+          id: id,
           nickname: '',
           phone: phone,
           age: 0,
@@ -63,6 +66,21 @@ export class FirebaseProvider extends React.Component {
         .catch(e => {
           console.log('firestore failed', e)
           this.setState({ ...this.state, status: 'signuperror' })
+        })
+        
+        const now = new Date()
+        firestore().collection('chats').add({
+          lastMessagedAt: now,
+          lastMessagedText: "메세지가 도착했습니다.",
+          users: ['rGjb3ut1WZbZTXv3rd9mGWSBrfx1', id],
+          unreadMessages: {'rGjb3ut1WZbZTXv3rd9mGWSBrfx1': 0, id: 1},
+        }).then(doc => {
+          firestore().collection('chats').doc(doc.id).collection('messages').add({
+            checked: false,
+            createdAt: now,
+            message: "메세지가 도착했습니다.",
+            sender: 'rGjb3ut1WZbZTXv3rd9mGWSBrfx1'
+          }).then(() => console.log("initialization done"))
         })
       })
       .catch(e => {
@@ -135,6 +153,12 @@ export class FirebaseProvider extends React.Component {
     firestore().collection('users').doc(this.state.user.uid).update(data)
   }
 
+  sendHeart = number => {
+    const newProfile = this.state.profile
+    newProfile.heart -= number
+    this.setState({ ...this.state, profile: newProfile })
+  }
+
   loadUser = async () => {
     const user = auth().currentUser
     if (user !== null) {
@@ -154,21 +178,30 @@ export class FirebaseProvider extends React.Component {
     let todaysCard = await firestore().collection('users').doc(this.state.user.uid).collection('todaysCard').orderBy('createdAt', 'desc').get()
     if (todaysCard.docs.length > 0) {
       let index = 0
+      let newCard = []
       for (let item of todaysCard.docs) {
         let images = []
         let profiles = []
-        const firstProfile = await firestore().collection('users').doc(item._data.users[0]).get()
-        const secondProfile = await firestore().collection('users').doc(item._data.users[1]).get()
-        const firstUrl = await this.downloadImage(firstProfile._data.image)
-        const secondUrl = await this.downloadImage(secondProfile._data.image)
-        images.push(firstUrl)
-        images.push(secondUrl)
-        profiles.push(firstProfile._data)
-        profiles.push(secondProfile._data)
-        todaysCard.docs[index] = {...item, images, profiles, id: item.id}
-        index++
+        // 하루 지났는지 확인
+        if (calcTimeLeft(item._data.createdAt) !== 'remove') {
+          const firstProfile = await firestore().collection('users').doc(item._data.users[0]).get()
+          const secondProfile = await firestore().collection('users').doc(item._data.users[1]).get()
+          const firstUrl = await this.downloadImage(firstProfile._data.image)
+          const secondUrl = await this.downloadImage(secondProfile._data.image)
+          images.push(firstUrl)
+          images.push(secondUrl)  
+          profiles.push(firstProfile._data)
+          profiles.push(secondProfile._data)
+          // todaysCard.docs[index] = {...item, images, profiles, id: item.id}
+          newCard.push({ ...item, images, profiles, id: item.id })
+          index++
+        } else {
+          await firestore().collection('users').doc(this.state.user.uid).collection('todaysCard').doc(item.id).delete()
+        }
       }
-      this.setState({ ...this.state, todaysCard: todaysCard.docs})
+
+      // if (newCard.length === 0) this.loadtodaysCard()
+      this.setState({ ...this.state, todaysCard: newCard})
     } else {
       let users = await firestore().collection('users').where('sex', '!=', this.state.profile.sex).get()
       users.docs.sort(() => Math.random() - 0.5)
